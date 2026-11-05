@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CotiTech | Vende tu hardware</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<style type="text/tailwindcss">
+  html{color-scheme:dark}
+  .card{@apply bg-slate-800 border border-slate-700 rounded-2xl}
+  .inp{@apply w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500}
+  .lbl{@apply block text-sm font-semibold text-slate-300 mb-1.5}
+  .btn{@apply inline-flex items-center justify-center gap-2 font-bold rounded-xl px-4 py-2.5 text-sm transition disabled:opacity-40 disabled:cursor-not-allowed}
+  .tab{@apply flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-300 border border-slate-700 hover:border-indigo-500 transition}
+  .tab.on{@apply bg-indigo-500 border-indigo-500 text-white}
+</style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+
+<header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-4">
+      <div class="text-2xl font-black tracking-tight">Coti<span class="text-emerald-400">Tech</span></div>
+      <button id="status" onclick="loadAll()" title="Reintentar conexión" class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>Conectando…
+      </button>
+    </div>
+    <nav class="flex gap-2">
+      <button id="t-cliente" onclick="show('cliente')" class="tab on"><i data-lucide="smartphone" class="w-4 h-4"></i>Pre-Cotizar mi Equipo <span class="hidden lg:inline font-normal opacity-80">(Cliente Vendedor)</span></button>
+      <button id="t-admin" onclick="show('admin')" class="tab"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>Panel Empresa <span class="hidden lg:inline font-normal opacity-80">(Comprador / Valuador)</span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+
+  <!-- VISTA 1: CLIENTE VENDEDOR -->
+  <section id="v-cliente">
+    <h1 class="text-3xl md:text-4xl font-extrabold">Calculadora de Trade-In</h1>
+    <p class="text-slate-400 mt-1 mb-8">Obtén el valor de tu hardware al instante en CotiTech.</p>
+    <div class="grid lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-3">
+        <h2 class="text-lg font-bold mb-3">1. Selecciona la categoría</h2>
+        <div id="cats" class="grid grid-cols-2 gap-3"></div>
+      </div>
+      <div class="lg:col-span-5">
+        <h2 class="text-lg font-bold mb-3">2. Estado del dispositivo</h2>
+        <div class="card p-5 space-y-5">
+          <div>
+            <label class="lbl" for="modelo">Modelo / Especificaciones</label>
+            <select id="modelo" class="inp" onchange="C.modelId=this.value;upd()"></select>
+          </div>
+          <div>
+            <span class="lbl">Estado estético</span>
+            <div id="estados" class="grid grid-cols-3 gap-2"></div>
+          </div>
+          <div id="toggles" class="space-y-3"></div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div><label class="lbl" for="vNombre">Tu nombre</label><input id="vNombre" class="inp" placeholder="Nombre completo" autocomplete="name"></div>
+            <div><label class="lbl" for="vContacto">Teléfono o correo</label><input id="vContacto" class="inp" placeholder="55 1234 5678" autocomplete="tel"></div>
+          </div>
+        </div>
+      </div>
+      <div class="lg:col-span-4">
+        <h2 class="text-lg font-bold mb-3">3. Resumen de cotización</h2>
+        <div id="resumen"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISTA 2: PANEL EMPRESA -->
+  <section id="v-admin" class="hidden space-y-6">
+    <div id="metrics" class="grid sm:grid-cols-3 gap-4"></div>
+    <div class="grid xl:grid-cols-12 gap-6">
+      <div class="xl:col-span-4 space-y-6">
+        <div class="card p-5">
+          <h3 class="text-lg font-bold">Registrar precio base de compra</h3>
+          <p class="text-sm text-slate-400 mb-4">Define cuánto paga la empresa por modelo.</p>
+          <div class="space-y-3">
+            <div><label class="lbl" for="aCat">Categoría</label><select id="aCat" class="inp"></select></div>
+            <div><label class="lbl" for="aModelo">Modelo</label><input id="aModelo" class="inp" placeholder="Ej. iPhone 14 128GB"></div>
+            <div><label class="lbl" for="aPrecio">Precio base (MXN)</label><input id="aPrecio" type="number" min="1" step="50" class="inp" placeholder="2500"></div>
+            <button onclick="addModelo()" class="btn w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900"><i data-lucide="save" class="w-4 h-4"></i>Guardar en tabulador</button>
+          </div>
+        </div>
+        <div class="card p-5">
+          <h3 class="text-lg font-bold mb-2">Modelos en el tabulador</h3>
+          <div id="catList" class="max-h-96 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+      <div class="xl:col-span-8 card p-5 self-start">
+        <h3 class="text-lg font-bold">Folios de pre-cotización de clientes</h3>
+        <div class="flex flex-wrap gap-3 my-4">
+          <div class="relative flex-1 min-w-[200px]">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-500"></i>
+            <input id="q" oninput="R(renderRows)" class="inp !pl-9" placeholder="Buscar por folio, cliente o equipo">
+          </div>
+          <select id="fEst" onchange="R(renderRows)" class="inp !w-auto"></select>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-slate-700/40 text-slate-300">
+              <tr><th class="px-3 py-3">Folio</th><th class="px-3 py-3">Vendedor</th><th class="px-3 py-3">Equipo</th><th class="px-3 py-3">Oferta</th><th class="px-3 py-3">Fecha</th><th class="px-3 py-3">Estatus</th><th class="px-3 py-3">Acciones</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="hidden"></div>
+
+<script>
+const API_URL = 'http://localhost:3000/api';
+
+/* ---------- Constantes y datos semilla ---------- */
+const CATS=[['GPU','Tarjeta Gráfica (GPU)','fan'],['CPU','Procesador (CPU)','cpu'],['Laptop','Laptop','laptop'],['Celular','Celular','smartphone'],['RAM_SSD','RAM / SSD','memory-stick'],['Motherboard','Motherboard','circuit-board']];
+const ESTS=[['IMPECABLE','Impecable','Como nuevo, sin marcas'],['DETALLES_LEVES','Detalles leves','Rayones menores'],['DESGASTE_NOTABLE','Desgaste notable','Golpes o marcas visibles']];
+const EST=Object.fromEntries(ESTS.map(e=>[e[0],e[1]]));
+const FACT={IMPECABLE:1,DETALLES_LEVES:.85,DESGASTE_NOTABLE:.65};
+const BADGE={PENDIENTE:'bg-amber-500/15 text-amber-400 border-amber-500/40',ACEPTADO:'bg-emerald-500/15 text-emerald-400 border-emerald-500/40',RECHAZADO:'bg-rose-500/15 text-rose-400 border-rose-500/40'};
+let uid=1000;
+
+// Vista previa local (el backend calcula la oferta real al registrar)
+function calc(base,e,f,c){const v=base*FACT[e]*(f?1:.5)*(c?1.05:1);return[Math.round(v*.9/10)*10,Math.round(v*1.1/10)*10]}
+function mkPre(m,d,estatus='PENDIENTE',dias=0){
+  const [mn,mx]=calc(m.precioBase,d.estadoEstetico,d.funcionaAlCien,d.incluyeCajaAccesorios);
+  return{id:++uid,folio:'CTZ-'+Math.floor(10000+Math.random()*90000),catalogoId:m.id,modeloNombre:m.modelo,categoria:m.categoria,...d,ofertaMinima:mn,ofertaMaxima:mx,estatus,creadoEn:new Date(Date.now()-dias*864e5).toISOString()};
+}
+const SEED_CAT=[['GPU','NVIDIA RTX 3060 12GB',4800],['GPU','NVIDIA RTX 4060 8GB',5600],['GPU','AMD RX 6700 XT',4200],['CPU','AMD Ryzen 5 5600X',2300],['CPU','Intel Core i7-12700K',4100],['Laptop','Laptop HP Pavilion 15',8500],['Laptop','MacBook Air M1 256GB',9800],['Celular','iPhone 13 Pro 128GB',8300],['Celular','Samsung Galaxy S22 128GB',4500],['RAM_SSD','Kingston Fury 16GB DDR4',450],['RAM_SSD','Samsung 970 EVO 1TB NVMe',900],['Motherboard','ASUS TUF B550-Plus',1800]]
+  .map(([c,m,p],i)=>({id:i+1,categoria:c,modelo:m,precioBase:p,activo:true}));
+const SEED_PRE=[[8,'Carlos López','55 1234 5678','IMPECABLE',true,true,'PENDIENTE',0],[6,'Ana Martínez','ana.mtz@mail.com','DETALLES_LEVES',true,false,'PENDIENTE',1],[1,'Luis Ramírez','81 4455 6677','DESGASTE_NOTABLE',true,false,'ACEPTADO',2],[9,'Sofía Herrera','33 9988 7766','DETALLES_LEVES',false,false,'RECHAZADO',3],[4,'Jorge Pérez','jorge.p@mail.com','IMPECABLE',true,true,'ACEPTADO',5],[7,'María Torres','55 2211 3344','IMPECABLE',true,false,'PENDIENTE',0]]
+  .map(([i,n,c,e,f,x,s,d])=>mkPre(SEED_CAT[i-1],{vendedorNombre:n,vendedorContacto:c,estadoEstetico:e,funcionaAlCien:f,incluyeCajaAccesorios:x},s,d));
+
+/* ---------- Estado y utilidades ---------- */
+const S={cat:[],pre:[],online:false};
+const C={cat:'Celular',modelId:'',est:'IMPECABLE',result:null,busy:false};
+const $=id=>document.getElementById(id);
+const ic=()=>window.lucide&&lucide.createIcons();
+const R=(...f)=>{f.forEach(x=>x());ic()};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>'$'+Number(n||0).toLocaleString('es-MX');
+
+function toast(m,t='ok'){const e=$('toast');e.textContent=m;e.className='fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-xl '+(t=='err'?'bg-rose-500 text-white':'bg-emerald-500 text-slate-900');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.add('hidden'),3200)}
+function setOnline(v){S.online=v;const b=$('status');b.className='flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border '+(v?'border-emerald-500/50 text-emerald-400 bg-emerald-500/10':'border-amber-500/50 text-amber-400 bg-amber-500/10');b.innerHTML=`<span class="w-2 h-2 rounded-full animate-pulse ${v?'bg-emerald-400':'bg-amber-400'}"></span>${v?'Conectado a NestJS':'Modo Local'}`}
+
+async function api(path,method='GET',body){
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);let r;
+  try{r=await fetch(API_URL+path,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,signal:ctl.signal})}
+  catch{clearTimeout(t);setOnline(false);return{offline:true}}
+  clearTimeout(t);setOnline(true);
+  if(!r.ok){toast('El servidor respondió con error '+r.status,'err');return{error:true}}
+  return{data:r.status==204?null:await r.json().catch(()=>null)};
+}
+async function loadAll(){
+  const [a,b]=await Promise.all([api('/catalogo'),api('/precotizaciones')]);
+  if(Array.isArray(a.data))S.cat=a.data;else if(!S.cat.length)S.cat=SEED_CAT.map(x=>({...x}));
+  if(Array.isArray(b.data))S.pre=b.data;else if(!S.pre.length)S.pre=SEED_PRE.map(x=>({...x}));
+  renderAll();
+}
+
+/* ---------- Vista Cliente ---------- */
+const tog=(id,t,s,on)=>`<label class="flex items-center justify-between gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 cursor-pointer"><span class="text-sm font-semibold">${t}<small class="block font-normal text-slate-400">${s}</small></span><input id="${id}" type="checkbox" ${on?'checked':''} onchange="upd()" class="sr-only peer"><span class="w-11 h-6 rounded-full bg-slate-600 peer-checked:bg-emerald-500 relative transition shrink-0 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 h-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5"></span></label>`;
+const getForm=()=>({estadoEstetico:C.est,funcionaAlCien:$('funciona').checked,incluyeCajaAccesorios:$('caja').checked});
+
+function renderCats(){$('cats').innerHTML=CATS.map(([v,l,i])=>`<button onclick="selCat('${v}')" class="rounded-2xl border p-4 flex flex-col items-center gap-2 transition ${C.cat==v?'border-emerald-500 bg-emerald-500/15 text-emerald-400':'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'}"><i data-lucide="${i}" class="w-8 h-8"></i><span class="text-sm font-semibold text-center">${l}</span></button>`).join('')}
+function renderModelos(){
+  const l=S.cat.filter(m=>m.categoria==C.cat&&m.activo!==false);
+  $('modelo').innerHTML=`<option value="">${l.length?'Selecciona un modelo…':'Sin modelos en el tabulador'}</option>`+l.map(m=>`<option value="${esc(m.id)}" ${m.id==C.modelId?'selected':''}>${esc(m.modelo)}</option>`).join('');
+}
+function renderEstados(){$('estados').innerHTML=ESTS.map(([v,l,s])=>`<button onclick="selEst('${v}')" class="rounded-xl border p-3 text-center transition ${C.est==v?'border-emerald-500 bg-emerald-500/15':'border-slate-700 bg-slate-900 hover:border-slate-500'}"><div class="text-sm font-bold ${C.est==v?'text-emerald-400':''}">${l}</div><div class="text-xs text-slate-400 mt-0.5">${s}</div></button>`).join('')}
+function renderResumen(){
+  const m=S.cat.find(x=>x.id==C.modelId),f=getForm(),r=C.result;
+  const rng=r?[r.ofertaMinima,r.ofertaMaxima]:m?calc(m.precioBase,f.estadoEstetico,f.funcionaAlCien,f.incluyeCajaAccesorios):null;
+  const price=rng?`${fmt(rng[0])} - ${fmt(rng[1])}`:'$— - $—';
+  const li=(a,b)=>`<li class="flex justify-between gap-3"><span>${a}</span><span class="text-right font-bold">${b}</span></li>`;
+  $('resumen').innerHTML=`<div class="rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-slate-900 p-6 shadow-xl shadow-emerald-900/30">
+    <h3 class="text-center font-extrabold text-xl">${r?'¡Pre-cotización registrada!':'Tu oferta estimada'}</h3>
+    <p class="text-center text-3xl font-black my-5 leading-tight">${price} <span class="text-lg">MXN</span></p>
+    <p class="text-center text-sm font-medium">Basado en tus respuestas y sujeto a inspección física.</p>
+    ${r?`<div class="mt-5 border-2 border-dashed border-slate-900 rounded-xl p-1.5"><div class="bg-slate-900 text-white rounded-lg py-3 text-center text-xl font-black">FOLIO: ${esc(r.folio)}</div></div>
+      <p class="text-xs text-center mt-2 font-medium">${r.local?'Guardado en modo local, sin conexión al servidor. ':''}Presenta este folio al llevar tu equipo a revisión física.</p>
+      <div class="grid grid-cols-2 gap-2 mt-4"><button onclick="copiarFolio()" class="btn bg-white/80 hover:bg-white"><i data-lucide="copy" class="w-4 h-4"></i>Copiar folio</button><button onclick="nueva()" class="btn bg-slate-900 text-white hover:bg-slate-800">Nueva cotización</button></div>`
+    :`<ul class="mt-5 text-sm bg-slate-900/10 rounded-xl p-3 space-y-1.5 font-medium">${li('Equipo',m?esc(m.modelo):'—')}${li('Estado',EST[C.est])}${li('Funciona al 100%',f.funcionaAlCien?'Sí':'No')}${li('Caja y accesorios',f.incluyeCajaAccesorios?'Sí':'No')}</ul>
+      <button onclick="registrar()" class="btn w-full mt-5 bg-slate-900 text-white hover:bg-slate-800 !py-3.5">Registrar Pre-Cotización y Generar Folio</button>`}
+  </div>`;
+}
+function selCat(v){C.cat=v;C.modelId='';C.result=null;R(renderCats,renderModelos,renderResumen)}
+function selEst(v){C.est=v;C.result=null;R(renderEstados,renderResumen)}
+function upd(){C.result=null;R(renderResumen)}
+function nueva(){C.result=null;C.modelId='';C.est='IMPECABLE';$('vNombre').value='';$('vContacto').value='';$('funciona').checked=true;$('caja').checked=false;R(renderModelos,renderEstados,renderResumen)}
+function copiarFolio(){(navigator.clipboard?.writeText(C.result.folio)||Promise.reject()).then(()=>toast('Folio copiado')).catch(()=>toast('Copia el folio manualmente','err'))}
+
+async function registrar(){
+  if(C.busy)return;
+  const m=S.cat.find(x=>x.id==C.modelId),n=$('vNombre').value.trim(),c=$('vContacto').value.trim();
+  if(!m)return toast('Selecciona un modelo','err');
+  if(!n||!c)return toast('Ingresa tu nombre y un medio de contacto','err');
+  const body={catalogoId:Number(m.id),vendedorNombre:n,vendedorContacto:c,...getForm()};
+  C.busy=true;
+  try{
+    const r=await api('/precotizaciones','POST',body);
+    if(r.error)return;
+    let p,local=false;
+    if(r.data&&r.data.folio)p=r.data;
+    else{p=mkPre(m,body);S.pre.unshift(p);local=true}
+    C.result={...p,local};
+    R(renderResumen,renderMetrics,renderRows);
+    toast('Folio '+p.folio+' generado');
+    if(!local)loadAll();
+  }finally{C.busy=false}
+}
+
+/* ---------- Vista Empresa ---------- */
+function renderMetrics(){
+  const pend=S.pre.filter(p=>p.estatus=='PENDIENTE').reduce((a,p)=>a+Number(p.ofertaMaxima||0),0);
+  const M=[['Total de folios',S.pre.length,'file-text','text-indigo-400'],['Modelos en tabulador',S.cat.length,'database','text-emerald-400'],['Capital estimado en folios pendientes',fmt(pend)+' MXN','wallet','text-amber-400']];
+  $('metrics').innerHTML=M.map(([t,v,i,c])=>`<div class="card p-5 flex items-center justify-between gap-3"><div><p class="text-sm text-slate-400">${t}</p><p class="text-2xl font-extrabold mt-1">${v}</p></div><i data-lucide="${i}" class="w-8 h-8 shrink-0 ${c}"></i></div>`).join('');
+}
+function renderCatList(){
+  $('catList').innerHTML=S.cat.length?S.cat.map(m=>`<div class="flex items-center justify-between gap-2 py-2.5 border-b border-slate-700/60 last:border-0"><div class="min-w-0"><p class="text-sm font-semibold truncate">${esc(m.modelo)}</p><p class="text-xs text-slate-400">${esc(m.categoria)} · <span class="text-emerald-400 font-semibold">${fmt(m.precioBase)}</span></p></div><button onclick="delModelo('${esc(m.id)}')" title="Eliminar modelo" class="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`).join(''):'<p class="text-sm text-slate-400">Aún no hay modelos. Registra el primero con el formulario.</p>';
+}
+function renderRows(){
+  const q=$('q').value.toLowerCase().trim(),f=$('fEst').value;
+  const l=S.pre.filter(p=>(!f||p.estatus==f)&&(!q||[p.folio,p.vendedorNombre,p.vendedorContacto,p.modeloNombre].join(' ').toLowerCase().includes(q)));
+  const act=(p,s,icon,cls)=>`<button onclick="setEst('${esc(p.id)}','${s}')" ${p.estatus==s?'disabled':''} class="btn !px-2.5 !py-1.5 text-xs ${cls}"><i data-lucide="${icon}" class="w-3.5 h-3.5"></i>${s=='ACEPTADO'?'Aceptar':'Rechazar'}</button>`;
+  $('rows').innerHTML=l.length?l.map(p=>`<tr class="border-t border-slate-700/60 hover:bg-slate-700/20 align-top">
+    <td class="px-3 py-3 font-bold text-indigo-400 whitespace-nowrap">${esc(p.folio)}</td>
+    <td class="px-3 py-3"><p class="font-semibold">${esc(p.vendedorNombre)}</p><p class="text-xs text-slate-400">${esc(p.vendedorContacto)}</p></td>
+    <td class="px-3 py-3"><p class="font-semibold">${esc(p.modeloNombre)}</p><p class="text-xs text-slate-400">${esc(p.categoria)} · ${EST[p.estadoEstetico]||''} · ${p.funcionaAlCien?'Funciona 100%':'Con fallas'}${p.incluyeCajaAccesorios?' · Caja/acc.':''}</p></td>
+    <td class="px-3 py-3 whitespace-nowrap font-semibold">${fmt(p.ofertaMinima)} – ${fmt(p.ofertaMaxima)}</td>
+    <td class="px-3 py-3 text-xs text-slate-400 whitespace-nowrap">${p.creadoEn?new Date(p.creadoEn).toLocaleDateString('es-MX'):'—'}</td>
+    <td class="px-3 py-3"><span class="text-xs font-bold px-2.5 py-1 rounded-full border ${BADGE[p.estatus]||''}">${esc(p.estatus)}</span></td>
+    <td class="px-3 py-3"><div class="flex gap-1.5">${act(p,'ACEPTADO','check','bg-emerald-500 text-slate-900 hover:bg-emerald-400')}${act(p,'RECHAZADO','x','bg-rose-500/90 text-white hover:bg-rose-500')}</div></td></tr>`).join(''):'<tr><td colspan="7" class="px-3 py-10 text-center text-slate-400">No hay folios que coincidan con la búsqueda.</td></tr>';
+}
+async function addModelo(){
+  const categoria=$('aCat').value,modelo=$('aModelo').value.trim(),precioBase=Number($('aPrecio').value);
+  if(!modelo||!(precioBase>0))return toast('Escribe el modelo y un precio base mayor a 0','err');
+  const r=await api('/catalogo','POST',{categoria,modelo,precioBase});
+  if(r.error)return;
+  if(r.offline)S.cat.push({id:Math.max(0,...S.cat.map(x=>+x.id||0))+1,categoria,modelo,precioBase,activo:true});else await loadAll();
+  $('aModelo').value='';$('aPrecio').value='';
+  R(renderMetrics,renderCatList,renderModelos);
+  toast('Modelo guardado'+(r.offline?' · modo local':''));
+}
+async function delModelo(id){
+  if(!confirm('¿Eliminar este modelo del tabulador?'))return;
+  const r=await api('/catalogo/'+id,'DELETE');
+  if(r.error)return;
+  if(r.offline){S.cat=S.cat.filter(x=>String(x.id)!=String(id));if(C.modelId==id)C.modelId='';R(renderMetrics,renderCatList,renderModelos,renderResumen)}else await loadAll();
+  toast('Modelo eliminado'+(r.offline?' · modo local':''));
+}
+async function setEst(id,estatus){
+  const r=await api(`/precotizaciones/${id}/estatus`,'PATCH',{estatus});
+  if(r.error)return;
+  if(r.offline){const p=S.pre.find(x=>String(x.id)==String(id));if(p)p.estatus=estatus;R(renderMetrics,renderRows)}else await loadAll();
+  toast('Folio marcado como '+estatus+(r.offline?' · modo local':''));
+}
+
+/* ---------- Navegación e inicio ---------- */
+function show(v){['cliente','admin'].forEach(k=>{$('v-'+k).classList.toggle('hidden',k!=v);$('t-'+k).className='tab'+(k==v?' on':'')});ic()}
+function renderAll(){R(renderCats,renderModelos,renderEstados,renderResumen,renderMetrics,renderCatList,renderRows)}
+
+$('aCat').innerHTML=CATS.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join('');
+$('fEst').innerHTML='<option value="">Todos los estatus</option>'+Object.keys(BADGE).map(s=>`<option value="${s}">${s[0]+s.slice(1).toLowerCase()}</option>`).join('');
+$('toggles').innerHTML=tog('funciona','Funciona al 100%','Sin fallas de hardware ni de software',true)+tog('caja','Incluye caja y accesorios','Caja original, cargador o cables',false);
+renderAll();
+loadAll();
+</script>
+</body>
+</html>
