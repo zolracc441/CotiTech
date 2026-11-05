@@ -6,13 +6,13 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Prefijo /api para empatar con const API_URL = 'http://localhost:3000/api'
+
   app.setGlobalPrefix('api');
 
-  // Habilita CORS para peticiones desde navegador
+ 
   app.enableCors();
 
-  // Sirve public/index.html en http://localhost:3000
+
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
   await app.listen(3000);
