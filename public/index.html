@@ -35,7 +35,7 @@
 
 <main class="max-w-7xl mx-auto px-4 py-8">
 
-  <!-- VISTA 1: CLIENTE VENDEDOR -->
+
   <section id="v-cliente">
     <h1 class="text-3xl md:text-4xl font-extrabold">Calculadora de Trade-In</h1>
     <p class="text-slate-400 mt-1 mb-8">Obtén el valor de tu hardware al instante en CotiTech.</p>
@@ -69,7 +69,7 @@
     </div>
   </section>
 
-  <!-- VISTA 2: PANEL EMPRESA -->
+
   <section id="v-admin" class="hidden space-y-6">
     <div id="metrics" class="grid sm:grid-cols-3 gap-4"></div>
     <div class="grid xl:grid-cols-12 gap-6">
@@ -116,7 +116,7 @@
 <script>
 const API_URL = 'http://localhost:3000/api';
 
-/* ---------- Constantes y datos semilla ---------- */
+
 const CATS=[['GPU','Tarjeta Gráfica (GPU)','fan'],['CPU','Procesador (CPU)','cpu'],['Laptop','Laptop','laptop'],['Celular','Celular','smartphone'],['RAM_SSD','RAM / SSD','memory-stick'],['Motherboard','Motherboard','circuit-board']];
 const ESTS=[['IMPECABLE','Impecable','Como nuevo, sin marcas'],['DETALLES_LEVES','Detalles leves','Rayones menores'],['DESGASTE_NOTABLE','Desgaste notable','Golpes o marcas visibles']];
 const EST=Object.fromEntries(ESTS.map(e=>[e[0],e[1]]));
@@ -135,7 +135,7 @@ const SEED_CAT=[['GPU','NVIDIA RTX 3060 12GB',4800],['GPU','NVIDIA RTX 4060 8GB'
 const SEED_PRE=[[8,'Carlos López','55 1234 5678','IMPECABLE',true,true,'PENDIENTE',0],[6,'Ana Martínez','ana.mtz@mail.com','DETALLES_LEVES',true,false,'PENDIENTE',1],[1,'Luis Ramírez','81 4455 6677','DESGASTE_NOTABLE',true,false,'ACEPTADO',2],[9,'Sofía Herrera','33 9988 7766','DETALLES_LEVES',false,false,'RECHAZADO',3],[4,'Jorge Pérez','jorge.p@mail.com','IMPECABLE',true,true,'ACEPTADO',5],[7,'María Torres','55 2211 3344','IMPECABLE',true,false,'PENDIENTE',0]]
   .map(([i,n,c,e,f,x,s,d])=>mkPre(SEED_CAT[i-1],{vendedorNombre:n,vendedorContacto:c,estadoEstetico:e,funcionaAlCien:f,incluyeCajaAccesorios:x},s,d));
 
-/* ---------- Estado y utilidades ---------- */
+
 const S={cat:[],pre:[],online:false};
 const C={cat:'Celular',modelId:'',est:'IMPECABLE',result:null,busy:false};
 const $=id=>document.getElementById(id);
@@ -162,7 +162,7 @@ async function loadAll(){
   renderAll();
 }
 
-/* ---------- Vista Cliente ---------- */
+
 const tog=(id,t,s,on)=>`<label class="flex items-center justify-between gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 cursor-pointer"><span class="text-sm font-semibold">${t}<small class="block font-normal text-slate-400">${s}</small></span><input id="${id}" type="checkbox" ${on?'checked':''} onchange="upd()" class="sr-only peer"><span class="w-11 h-6 rounded-full bg-slate-600 peer-checked:bg-emerald-500 relative transition shrink-0 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 h-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5"></span></label>`;
 const getForm=()=>({estadoEstetico:C.est,funcionaAlCien:$('funciona').checked,incluyeCajaAccesorios:$('caja').checked});
 
@@ -214,7 +214,7 @@ async function registrar(){
   }finally{C.busy=false}
 }
 
-/* ---------- Vista Empresa ---------- */
+
 function renderMetrics(){
   const pend=S.pre.filter(p=>p.estatus=='PENDIENTE').reduce((a,p)=>a+Number(p.ofertaMaxima||0),0);
   const M=[['Total de folios',S.pre.length,'file-text','text-indigo-400'],['Modelos en tabulador',S.cat.length,'database','text-emerald-400'],['Capital estimado en folios pendientes',fmt(pend)+' MXN','wallet','text-amber-400']];
@@ -260,7 +260,7 @@ async function setEst(id,estatus){
   toast('Folio marcado como '+estatus+(r.offline?' · modo local':''));
 }
 
-/* ---------- Navegación e inicio ---------- */
+
 function show(v){['cliente','admin'].forEach(k=>{$('v-'+k).classList.toggle('hidden',k!=v);$('t-'+k).className='tab'+(k==v?' on':'')});ic()}
 function renderAll(){R(renderCats,renderModelos,renderEstados,renderResumen,renderMetrics,renderCatList,renderRows)}
 
